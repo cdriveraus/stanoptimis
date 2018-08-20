@@ -3,3 +3,4 @@
 export(isdiag)
 export(optimstan)
 export(stanoptimis)
+import(DEoptim)

@@ -1,6 +1,6 @@
 #' Diagnostics for importance sampling from stanoptim
 #'
-#' @param fit Output from stanoptim when isloops > 0
+#' @param fit Output from stanoptimis when isloops > 0
 #'
 #' @return Nothing. Plots convergence of parameter mean estimates from initial Hessian based distribution to final sampling distribution.
 #' @export
@@ -33,18 +33,18 @@
 #'
 #' optimfit <- optimstan(standata = list(),sm = sm,isloops=10,issamples = 1000,cores=3)
 #'
-#' apply(optimfit$rawposterior,2,mean)
-#' apply(optimfit$rawposterior,2,sd)
+#' apply(optimfit$posterior,2,mean)
+#' apply(optimfit$posterior,2,sd)
 #' isdiag(optimfit)
 #'
-#' plot(density(optimfit$rawposterior))
+#' plot(density(optimfit$posterior))
 #' points(density(e2$y))
 #' }
 
 isdiag <- function(fit,wait=TRUE){
   iter=length(fit$isdiags$cov)
   mcov <- fit$isdiags$cov
-  samplecov <- cov(fit$rawposterior)
+  samplecov <- cov(fit$posterior)
   means <- simplify2array(fit$isdiags$means)
   means <- (means - means[,ncol(means)])
   means <- t(means / sqrt(diag(samplecov)))

@@ -12,6 +12,7 @@
 #' @param issamples Number of samples to use for final results of importance sampling.
 #' @param adjtransform Logical. If TRUE, the MAP estimate used as the basis for sampling will be based on the *unconstrained*
 #' parameters. If FALSE, it will use the estimate for *constrained* parameters.
+#' @param verbose Logical. Extra output while fitting?
 #'
 #' @return list containing: optimfit, the result from optimizing with stans optimizer;
 #' stanfit, the stanfit object used;
@@ -20,6 +21,7 @@
 #' transformedpars_old, a simple summary approach based on the minimum and Hessian;
 #' isdiags, a list containing elements used by \code{\link{isdiag}} for importance sampling diagnostics.
 #' @export
+#' @import DEoptim
 #'
 #' @examples
 #' #' \dontrun{
@@ -35,23 +37,23 @@
 #' "
 #'
 #' sm <- stan_model(model_code=scode)
-#' fit <- stan(fit = fit1, iter = 10000, verbose = FALSE)
+#' fit <- sampling(sm, iter = 10000)
 #' summary(fit)$summary
 #'
 #' ## extract samples as a list of arrays
 #' e <- extract(fit, permuted = TRUE)
 #'
-#' optimis <- stanoptimis(standata = list(),sm = sm,isloops=10,issamples = 1000,cores=3)
+#' optimis <- stanoptimis(standata = list(),sm = sm,isloops=30,issamples = 3000,cores=1)
 #'
 #'
-#' apply(optimis$rawposterior,2,mean)
-#' apply(optimis$rawposterior,2,sd)
+#' apply(optimis$posterior,2,mean)
+#' apply(optimis$posterior,2,sd)
 #' isdiag(optimis)
 #'
-#' plot(density(optimis$rawposterior))
-#' points(density(e2$y))
+#' plot(density(optimis$posterior))
+#' points(density(e$y),type='l',col=2)
 #' }
-stanoptimis <- function(standata, sm, init=0,
+stanoptimis <- function(standata, sm, init=0, verbose=FALSE,adjtransform=TRUE,
   deoptim=FALSE,
   decontrol=list(),
   isloops=5, isloopsize=500, issamples=500, cores=1){
@@ -60,7 +62,7 @@ stanoptimis <- function(standata, sm, init=0,
   if(is.null(decontrol$reltol)) decontrol$reltol=1e-4
   if(is.null(decontrol$NP)) decontrol$NP='auto'
   if(is.null(decontrol$CR)) decontrol$CR=.9
-  if(is.null(decontrol$trace)) decontrol$trace =ifelse(verbose>0,1,0)
+  if(is.null(decontrol$trace)) decontrol$trace =as.integer(verbose)
 
 
   message('Optimizing...')

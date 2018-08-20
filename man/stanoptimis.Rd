@@ -4,8 +4,9 @@
 \alias{stanoptimis}
 \title{Optimize / importance sample a stan model.}
 \usage{
-stanoptimis(standata, sm, init = 0, deoptim = FALSE, decontrol = list(),
-  isloops = 5, isloopsize = 500, issamples = 500, cores = 1)
+stanoptimis(standata, sm, init = 0, verbose = FALSE, adjtransform = TRUE,
+  deoptim = FALSE, decontrol = list(), isloops = 5, isloopsize = 500,
+  issamples = 500, cores = 1)
 }
 \arguments{
 \item{standata}{list object conforming to rstan data standards.}
@@ -13,6 +14,11 @@ stanoptimis(standata, sm, init = 0, deoptim = FALSE, decontrol = list(),
 \item{sm}{compiled stan model object.}
 
 \item{init}{init argument conforming to rstan init standards.}
+
+\item{verbose}{Logical. Extra output while fitting?}
+
+\item{adjtransform}{Logical. If TRUE, the MAP estimate used as the basis for sampling will be based on the *unconstrained*
+parameters. If FALSE, it will use the estimate for *constrained* parameters.}
 
 \item{deoptim}{Do first pass optimization using differential evolution? Slower, but better for cases with multiple
 minima / difficult optimization.}
@@ -26,9 +32,6 @@ minima / difficult optimization.}
 \item{issamples}{Number of samples to use for final results of importance sampling.}
 
 \item{cores}{Number of cpu cores to use.}
-
-\item{adjtransform}{Logical. If TRUE, the MAP estimate used as the basis for sampling will be based on the *unconstrained*
-parameters. If FALSE, it will use the estimate for *constrained* parameters.}
 }
 \value{
 list containing: optimfit, the result from optimizing with stans optimizer;
@@ -55,7 +58,7 @@ model {
 "
 
 sm <- stan_model(model_code=scode)
-fit <- stan(fit = fit1, iter = 10000, verbose = FALSE)
+fit <- sampling(sm, iter = 10000)
 summary(fit)$summary
 
 ## extract samples as a list of arrays
