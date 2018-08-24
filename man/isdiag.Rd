@@ -7,7 +7,7 @@
 isdiag(fit, wait = TRUE)
 }
 \arguments{
-\item{fit}{Output from stanoptim when isloops > 0}
+\item{fit}{Output from stanoptimis when isloops > 0}
 }
 \value{
 Nothing. Plots convergence of parameter mean estimates from initial Hessian based distribution to final sampling distribution.
@@ -43,11 +43,11 @@ a2 <- as.array(fit2)
 
 optimfit <- optimstan(standata = list(),sm = sm,isloops=10,issamples = 1000,cores=3)
 
-apply(optimfit$rawposterior,2,mean)
-apply(optimfit$rawposterior,2,sd)
+apply(optimfit$posterior,2,mean)
+apply(optimfit$posterior,2,sd)
 isdiag(optimfit)
 
-plot(density(optimfit$rawposterior))
+plot(density(optimfit$posterior))
 points(density(e2$y))
 }
 }

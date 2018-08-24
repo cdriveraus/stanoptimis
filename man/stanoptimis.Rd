@@ -4,9 +4,9 @@
 \alias{stanoptimis}
 \title{Optimize / importance sample a stan model.}
 \usage{
-stanoptimis(standata, sm, init = 0, verbose = FALSE, adjtransform = TRUE,
-  deoptim = FALSE, decontrol = list(), isloops = 5, isloopsize = 500,
-  issamples = 500, cores = 1)
+stanoptimis(standata, sm, init = 0, verbose = FALSE, tdf = 2,
+  adjtransform = TRUE, deoptim = FALSE, decontrol = list(), isloops = 5,
+  isloopsize = 500, issamples = 500, cores = 1)
 }
 \arguments{
 \item{standata}{list object conforming to rstan data standards.}
@@ -16,6 +16,8 @@ stanoptimis(standata, sm, init = 0, verbose = FALSE, adjtransform = TRUE,
 \item{init}{init argument conforming to rstan init standards.}
 
 \item{verbose}{Logical. Extra output while fitting?}
+
+\item{tdf}{Degrees of freedom for importance sampling t distributions.}
 
 \item{adjtransform}{Logical. If TRUE, the MAP estimate used as the basis for sampling will be based on the *unconstrained*
 parameters. If FALSE, it will use the estimate for *constrained* parameters.}
@@ -64,14 +66,14 @@ summary(fit)$summary
 ## extract samples as a list of arrays
 e <- extract(fit, permuted = TRUE)
 
-optimis <- stanoptimis(standata = list(),sm = sm,isloops=10,issamples = 1000,cores=3)
+optimis <- stanoptimis(standata = list(),sm = sm,isloops=30,issamples = 3000,cores=1)
 
 
-apply(optimis$rawposterior,2,mean)
-apply(optimis$rawposterior,2,sd)
+apply(optimis$posterior,2,mean)
+apply(optimis$posterior,2,sd)
 isdiag(optimis)
 
-plot(density(optimis$rawposterior))
-points(density(e2$y))
+plot(density(optimis$posterior))
+points(density(e$y),type='l',col=2)
 }
 }

@@ -3,6 +3,7 @@
 #' @param standata list object conforming to rstan data standards.
 #' @param sm compiled stan model object.
 #' @param init init argument conforming to rstan init standards.
+#' @param tdf Degrees of freedom for importance sampling t distributions.
 #' @param deoptim Do first pass optimization using differential evolution? Slower, but better for cases with multiple
 #' minima / difficult optimization.
 #' @param decontrol List of control parameters for differential evolution step, to pass to \code{\link[DEoptim]{DEoptim.control}}.
@@ -53,7 +54,7 @@
 #' plot(density(optimis$posterior))
 #' points(density(e$y),type='l',col=2)
 #' }
-stanoptimis <- function(standata, sm, init=0, verbose=FALSE,adjtransform=TRUE,
+stanoptimis <- function(standata, sm, init=0, verbose=FALSE,tdf=2,adjtransform=TRUE,
   deoptim=FALSE,
   decontrol=list(),
   isloops=5, isloopsize=500, issamples=500, cores=1){
@@ -189,7 +190,7 @@ stanoptimis <- function(standata, sm, init=0, verbose=FALSE,adjtransform=TRUE,
       for(j in 1:isloops){
         message(paste0('  ', j, ' / ', isloops, '...'))
         if(j==1){
-          df=2
+          df=tdf
           samples <- mvtnorm::rmvt(isloopsize, delta = delta[[j]], sigma = mcovl[[j]],   df = df)
         } else {
           # if(j>5) df <- 3
