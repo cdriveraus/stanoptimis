@@ -41,7 +41,7 @@ e2 <- extract(fit2, permuted = TRUE)
 a2 <- as.array(fit2)
 
 
-optimfit <- optimstan(standata = list(),sm = sm,isloops=10,issamples = 1000,cores=3)
+optimfit <- optimstan(standata = list(),sm = sm,isloops=10,finishsamples = 1000,cores=3)
 
 apply(optimfit$posterior,2,mean)
 apply(optimfit$posterior,2,sd)

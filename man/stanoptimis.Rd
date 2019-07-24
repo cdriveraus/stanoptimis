@@ -2,52 +2,66 @@
 % Please edit documentation in R/stanoptimis.R
 \name{stanoptimis}
 \alias{stanoptimis}
-\title{Optimize / importance sample a stan model.}
+\title{Optimize / importance sample a stan or ctStan model.}
 \usage{
-stanoptimis(standata, sm, init = 0, verbose = FALSE, tdf = 2,
-  adjtransform = TRUE, deoptim = FALSE, decontrol = list(), isloops = 5,
-  isloopsize = 500, issamples = 500, cores = 1)
+stanoptimis(standata, sm, init = "random", initsd = 0.01,
+  sampleinit = NA, deoptim = FALSE, estonly = FALSE, tol = 1e-14,
+  decontrol = list(), stochastic = FALSE, plotsgd = FALSE,
+  is = TRUE, isloopsize = 1000, finishsamples = 500, tdf = 2,
+  chancethreshold = 100, finishmultiply = 5, verbose = 0,
+  cores = 2)
 }
 \arguments{
 \item{standata}{list object conforming to rstan data standards.}
 
 \item{sm}{compiled stan model object.}
 
-\item{init}{init argument conforming to rstan init standards.}
+\item{init}{vector of unconstrained parameter values, or character string 'random' to initialise with
+random values very close to zero.}
 
-\item{verbose}{Logical. Extra output while fitting?}
+\item{initsd}{positive numeric specifying sd of normal distribution governing random sample of init parameters,
+if init='random' .}
 
-\item{tdf}{Degrees of freedom for importance sampling t distributions.}
-
-\item{adjtransform}{Logical. If TRUE, the MAP estimate used as the basis for sampling will be based on the *unconstrained*
-parameters. If FALSE, it will use the estimate for *constrained* parameters.}
+\item{sampleinit}{either NA, or an niterations * nparams matrix of samples to initialise importance sampling.}
 
 \item{deoptim}{Do first pass optimization using differential evolution? Slower, but better for cases with multiple
 minima / difficult optimization.}
 
-\item{decontrol}{List of control parameters for differential evolution step, to pass to \code{\link[DEoptim]{DEoptim.control}}.}
+\item{estonly}{if TRUE,just return point estimates under $rawest subobject.}
 
-\item{isloops}{Number of iterations of adaptive importance sampling to perform after optimization.}
+\item{tol}{objective tolerance.}
 
-\item{isloopsize}{Number of samples per iteration of importance sampling.}
+\item{decontrol}{List of control parameters for differential evolution step, to pass to \code{DEoptim.control}.}
 
-\item{issamples}{Number of samples to use for final results of importance sampling.}
+\item{stochastic}{Logical. Use stochastic gradient descent instead of mize (bfgs) optimizer.
+Still experimental, worth trying for either robustness checks or problematic, high dimensional, nonlinear, problems.}
+
+\item{plotsgd}{Logical. If TRUE, plot iteration details when using stochastic optimizer.}
+
+\item{is}{Logical. Use importance sampling, or just return map estimates?}
+
+\item{isloopsize}{Number of samples of approximating distribution per iteration of importance sampling.}
+
+\item{finishsamples}{Number of samples to draw for final results of importance sampling.}
+
+\item{tdf}{degrees of freedom of multivariate t distribution. Higher (more normal) generally gives more efficent
+importance sampling, at risk of truncating tails.}
+
+\item{chancethreshold}{drop iterations of importance sampling where any samples are chancethreshold times more likely to be drawn than expected.}
+
+\item{verbose}{Integer from 0 to 2. Higher values print more information during model fit -- for debugging.}
 
 \item{cores}{Number of cpu cores to use.}
 }
 \value{
-list containing: optimfit, the result from optimizing with stans optimizer;
-stanfit, the stanfit object used;
-posterior, the sampled posterior;
-transformedpars, the full model output based on the posterior;
-transformedpars_old, a simple summary approach based on the minimum and Hessian;
-isdiags, a list containing elements used by \code{\link{isdiag}} for importance sampling diagnostics.
+list containing fit elements
 }
 \description{
-Optimize / importance sample a stan model.
+Optimize / importance sample a stan or ctStan model.
 }
 \examples{
-#' \dontrun{
+#' \donttest{
+
 library(rstan)
 scode <- "
 parameters {
@@ -66,14 +80,18 @@ summary(fit)$summary
 ## extract samples as a list of arrays
 e <- extract(fit, permuted = TRUE)
 
-optimis <- stanoptimis(standata = list(),sm = sm,isloops=30,issamples = 3000,cores=1)
+#for ml or map estimates
+optimis <- stanoptimis(standata = list(),sm = sm,finishsamples = 3000,cores=2)
+optimis$optimfit
 
+#for posterior distributions
+optimis <- stanoptimis(standata = list(),sm = sm,finishsamples = 3000,cores=6,tdf=2)
 
-apply(optimis$posterior,2,mean)
-apply(optimis$posterior,2,sd)
+apply(optimis$rawposterior,2,mean)
+apply(optimis$rawposterior,2,sd)
 isdiag(optimis)
 
-plot(density(optimis$posterior))
-points(density(e$y),type='l',col=2)
+plot(density(optimis$rawposterior[,2],bw=.05))
+points(density(e$y[,2],bw=.05),type='l',col=2)
 }
 }

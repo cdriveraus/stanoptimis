@@ -1,11 +1,18 @@
 Package: stanoptimis
 Type: Package
-Title: Optimization and importance sampling for Stan.
-Version: 0.1.0
+Title: Optimization and importance sampling for Stan models.
+Version: 0.2.0
 Author: Charles Driver
 Maintainer: Charles Driver <driver@mpib-berlin.mpg.de>
-Description: A small package containing a 3 step routine for fitting Stan models, and limited diagnostics. For complex models where the maximum a-posteriori estimate provides a useful starting point, this approach 'may' allow for faster sampling from the posterior. The optional step 1 uses differential evolution, linking to the DEoptim package. Step 2 then uses the Stan optimizer. Step 3 computes a more accurate (my limited experience) Hessian or approximation of the Hessian, and uses this either for:     a) directly sampling from, for fast but inaccurate representation of the posterior.    b) as the basis for an initial target distribution for an adaptive importance sampling procedure.
+Description: A small package containing a 3 step routine for fitting Stan models, and limited diagnostics. For complex models with low to moderate numbers of parameters, where the maximum a-posteriori estimate provides a useful starting point, this approach 'may' allow for faster sampling from the posterior. The optional step 1 uses differential evolution, linking to the DEoptim package. Step 2 then uses a BFGS optimizer from the mize package. Step 3 computes a Hessian, or approximation of the Hessian, and uses this either for:     a) directly sampling from, for fast but inaccurate representation of the posterior.    b) as the basis for an initial target distribution for an adaptive importance sampling procedure.
 License: GPL-3
+Imports:
+    rstan (>= 2.19.0),
+    Rcpp,
+    mize,
+    utils
+Suggests:
+    DEoptim
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1

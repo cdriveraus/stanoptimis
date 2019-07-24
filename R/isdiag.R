@@ -31,7 +31,7 @@
 #' a2 <- as.array(fit2)
 #'
 #'
-#' optimfit <- optimstan(standata = list(),sm = sm,isloops=10,issamples = 1000,cores=3)
+#' optimfit <- optimstan(standata = list(),sm = sm,isloops=10,finishsamples = 1000,cores=3)
 #'
 #' apply(optimfit$posterior,2,mean)
 #' apply(optimfit$posterior,2,sd)
@@ -44,24 +44,22 @@
 isdiag <- function(fit,wait=TRUE){
   iter=length(fit$isdiags$cov)
   mcov <- fit$isdiags$cov
-  samplecov <- cov(fit$posterior)
+  samplecov <- cov(fit$rawposterior)
   means <- simplify2array(fit$isdiags$means)
   means <- (means - means[,ncol(means)])
   means <- t(means / sqrt(diag(samplecov)))
 
   # smeans <- matrix(apply(means,2,function(x) x))),byrow=TRUE,ncol=iter)
 matplot(means,type='l',main='Mean convergence',xlab='Sampling loop',ylab=' Z divergence relative to finish',xlim=c(0,iter*1.2))
+legend('topright',bty='n',legend = paste0('par',1:ncol(means)),lty = 1:5,col=1:6,text.col=1:6,cex = .7)
 
 if(wait) readline(prompt = 'Press a key to go to next plot')
 
-legend('topright',bty='n',legend = paste0('par',1:ncol(means)),lty = 1:5,col=1:6,text.col=1:6,cex = .7)
 
 sds <- simplify2array(mcov)
 sds <- apply(sds,3,function(x) sqrt(diag(x)))
 sds <- t((sds - sds[,iter]) / sqrt(diag(samplecov)))
 matplot(sds,type='l',main='SD convergence',xlab='Sampling loop',ylab='Z divergence relative to finish',xlim=c(0,iter*1.2))
-
 legend('topright',bty='n',legend = paste0('par',1:ncol(means)),lty = 1:5,col=1:6,text.col=1:6,cex = .7)
-
 
 }
